@@ -3,7 +3,7 @@ const colors = require('colors')
 const dotenv = require('dotenv').config()
 const connectDB = require('./config/db')
 
-const port = process.env.PORT || 5000
+const port = process.env.PORT || 8000
 
 connectDB()
 
@@ -16,6 +16,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 
 app.use('/api/goals', require('./routes/goalsRoute'))
+app.use('/api/users', require('./routes/usersRoute'))
 
 app.use(errorHandler)
 app.listen(port, () =>
