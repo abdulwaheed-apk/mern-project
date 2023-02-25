@@ -1,11 +1,12 @@
 const asyncHandler = require('express-async-handler')
 const Goal = require('../models/goalModel')
+const User = require('../models/userModel')
 
 // @desc Get goals
 // @route  GEt api/goals
 // @access Private
 const getGoals = asyncHandler(async (req, res) => {
-  const goals = await Goal.find()
+  const goals = await Goal.find({ user: req.user.id })
   res.status(200).json(goals)
 })
 
@@ -20,6 +21,7 @@ const setGoal = asyncHandler(async (req, res) => {
   }
   const newGoal = await Goal.create({
     text: req.body.text,
+    user: req.user.id,
   })
 
   res.status(200).json(newGoal)
@@ -33,6 +35,23 @@ const updateGoal = asyncHandler(async (req, res) => {
   if (!goal) {
     res.status(400)
     throw new Error('Select a Goal To update')
+  }
+  // first we will get user
+  const user = await User.findById(req.user.id) // As we have access to user.id due to middleware (verifyToken)
+
+  if (!user) {
+    res.status(401)
+    throw new Error('User not found')
+  }
+
+  // ! below here
+  // as we are getting goal  from Goal Model and which has user key
+  // and we are storing user id in goal model means goal.user == id of user who created goal
+  // in userController  getMe we specified id from _id userController.js ln 64
+  // and converting to string so that we can compare
+  if (goal.user.toString() !== req.user.id) {
+    res.status(401)
+    throw new Error('You are not authorized to update other users goal')
   }
   const updatedGoal = await Goal.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
@@ -50,6 +69,16 @@ const deleteGoal = asyncHandler(async (req, res) => {
     res.status(400)
     throw new Error('Select a goal to delete.')
   }
+  const user = await User.findById(req.user.id) // As we have access to user.id due to middleware (verifyToken)
+  if (!user) {
+    res.status(401)
+    throw new Error('User not found')
+  }
+  if (goal.user.toString() !== req.user.id) {
+    res.status(401)
+    throw new Error('You are not authorized to update other users goal')
+  }
+
   goal.remove()
   res.status(200).json({ id: req.params.id })
 })
