@@ -8,7 +8,7 @@ const User = require('../models/userModel')
 // @route  POST api/users
 // @access Public
 const registerUser = asyncHandler(async (req, res) => {
-  // destructure values recieved from request's body
+  // destructure values received from request's body
   const { name, email, password } = req.body
 
   // if any field is  not present through error
@@ -16,7 +16,6 @@ const registerUser = asyncHandler(async (req, res) => {
     res.status(400)
     throw new Error('Kindly Add Your details')
   }
-
   // check if user is unique(check if not already exist)
   const userExist = await User.findOne({ email })
   if (userExist) {
@@ -41,7 +40,7 @@ const registerUser = asyncHandler(async (req, res) => {
       _id: user.id,
       name: user.name,
       email: user.email,
-      // password: user.password,
+      password: user.password,
       token: generateToken(user._id),
     })
   } else {
@@ -54,6 +53,7 @@ const registerUser = asyncHandler(async (req, res) => {
 // @route  POST api/users/login
 // @access Public
 const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body
   // Get User
   const user = await User.findOne({ email })
 
@@ -76,7 +76,13 @@ const loginUser = asyncHandler(async (req, res) => {
 // @route  GET api/users/me
 // @access Private
 const getMe = asyncHandler(async (req, res) => {
-  res.send('Get user data')
+  const { _id, name, email } = await User.findById(req.user.id)
+
+  res.json({
+    id: _id,
+    name,
+    email,
+  })
 })
 
 // Generate JWT(token)
