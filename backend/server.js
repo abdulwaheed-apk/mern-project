@@ -21,6 +21,6 @@ app.use('/api/users', require('./routes/usersRoute'))
 app.use(errorHandler)
 app.listen(port, () =>
   console.log(
-    `Server Running at port http://localhost:${port}`.magenta.underline.inverse
+    `Server Running at port http://localhost:${port}`.magenta.underline
   )
 )
